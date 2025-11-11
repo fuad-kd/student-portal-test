@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Student Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* Simple style to hide/show sections */
+        .hidden { display: none; }
+        /* Custom style for the panel cards to match the image */
+        .card-border-blue { border-top: 5px solid #3b82f6; } /* Tailwind blue-500 */
+        .card-border-green { border-top: 5px solid #22c55e; } /* Tailwind green-500 */
+        .card-border-red { border-top: 5px solid #ef4444; } /* Tailwind red-500 */
+        .card-border-orange { border-top: 5px solid #f97316; } /* Tailwind orange-600 */
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center">
+
+    <header class="w-full bg-indigo-600 p-4 text-white shadow-md flex justify-between items-center">
+        <h1 class="text-2xl font-bold">University Portal</h1>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded hidden" onclick="logout()">Logout</button>
+    </header>
+
+    <main class="w-full max-w-6xl p-6"> <section id="login-section" class="bg-white p-6 rounded-lg shadow-xl mt-10 w-full max-w-md mx-auto">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-indigo-700">Login</h2>
+            <div id="login-error" class="text-red-500 mb-4 hidden"></div>
+            <input type="email" id="loginEmail" placeholder="Email or Student ID (Admin: admin@...)" class="w-full p-3 mb-4 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500" required>
+            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 mb-6 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500" required>
+            <button onclick="login()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded transition duration-200">Sign In</button>
+        </section>
+
+        <section id="admin-section" class="hidden mt-8">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">🏛️ Student Manager</h2>
+            
+            <div class="flex border-b border-gray-300 mb-6">
+                <button onclick="showAdminPanel('dashboard-panel')" id="dashboard-tab" class="px-4 py-2 text-lg font-medium border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-150">Dashboard</button>
+                <button onclick="showAdminPanel('add-student-panel')" id="add-student-tab" class="px-4 py-2 text-lg font-medium text-gray-500 hover:text-indigo-600 hover:border-indigo-600 transition-colors duration-150">Add/Edit Student Data</button>
+                
+                <button class="ml-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200" onclick="showAdminPanel('add-student-panel')">
+                    + Add New Student
+                </button>
+            </div>
+
+            <div id="dashboard-panel" class="">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">Student Details</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-blue">
+                        <p class="text-gray-500 font-medium">Total Students</p>
+                        <p id="dashboard-total-students" class="text-3xl font-bold text-gray-900 mt-1">0</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-green">
+                        <p class="text-gray-500 font-medium">Active Enrollment</p>
+                        <p id="dashboard-active-enrollment" class="text-3xl font-bold text-green-600 mt-1">0</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-red">
+                        <p class="text-gray-500 font-medium">Inactive/Dropout</p>
+                        <p id="dashboard-inactive-dropout" class="text-3xl font-bold text-red-600 mt-1">0</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-orange">
+                        <p class="text-gray-500 font-medium">Pending Actions</p>
+                        <p id="dashboard-pending-actions" class="text-3xl font-bold text-orange-600 mt-1">4</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <input type="text" placeholder="Search by name, ID, or grade..." class="w-full p-3 mb-6 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAME</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STUDENT ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GRADE</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list-body" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-lg text-gray-500">
+                                        No students found. Add your first student to the system!
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="add-student-panel" class="hidden">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">Add Student Data Form</h3>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <form id="addStudentForm" class="space-y-4">
+                        <input type="text" id="sID" placeholder="Student ID (e.g., S2023001)" class="w-full p-3 border rounded" required>
+                        <input type="email" id="sEmail" placeholder="Email (for login/contact)" class="w-full p-3 border rounded" required>
+                        <input type="password" id="sPassword" placeholder="Temporary Password (for student login)" class="w-full p-3 border rounded" required>
+                        <input type="text" id="sName" placeholder="Student Name" class="w-full p-3 border rounded" required>
+                        <input type="text" id="sDept" placeholder="Department Name" class="w-full p-3 border rounded" required>
+                        <input type="number" step="0.01" id="sCGPA" placeholder="Current CGPA" class="w-full p-3 border rounded" required>
+
+                        <h3 class="text-xl font-semibold mt-6 mb-2">Course Results</h3>
+                        <div id="results-container" class="space-y-2">
+                            <div class="flex space-x-2 result-entry">
+                                <input type="text" placeholder="Course Name (e.g., CS101)" class="w-2/5 p-2 border rounded" required>
+                                <input type="text" placeholder="Grade (e.g., A+)" class="w-1/5 p-2 border rounded" required>
+                                <input type="number" placeholder="Marks (e.g., 85)" class="w-1/5 p-2 border rounded" required>
+                                <button type="button" class="w-1/5 bg-red-400 text-white rounded" onclick="this.parentNode.remove()">Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addResultField()" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">Add Course</button>
+                        
+                        <h3 class="text-xl font-semibold mt-6 mb-2">Routine/Courses</h3>
+                        <textarea id="sRoutine" placeholder="Routine & Course List (text area for display on student side)" class="w-full p-3 border rounded h-32"></textarea>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded mt-6">Add/Update Student</button>
+                        <div id="admin-message" class="mt-4 text-center text-green-600 hidden"></div>
+                    </form>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="student-section" class="hidden mt-8">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-700">🧑‍🎓 Welcome, <span id="student-name" class="text-orange-500"></span>!</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-4 rounded-lg shadow-md text-center">
+                    <p class="text-lg text-gray-500">Department</p>
+                    <p id="s-dept" class="text-2xl font-semibold text-indigo-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-center">
+                    <p class="text-lg text-gray-500">CGPA</p>
+                    <p id="s-cgpa" class="text-3xl font-bold text-green-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-center">
+                    <p class="text-lg text-gray-500">Total Credits</p>
+                    <p id="s-credits" class="text-2xl font-semibold text-indigo-600">-</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl mb-8">
+                <h3 class="text-2xl font-semibold mb-4 text-indigo-700">Course Results</h3>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-indigo-700">Routine & Course List</h3>
+                <p id="s-routine" class="whitespace-pre-wrap text-gray-700"></p>
+            </div>
+        </section>
+        
+    </main>
+    
+    <script>
+        // 🚨 STEP 1: REPLACE WITH YOUR ACTUAL FIREBASE CONFIG 🚨
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNgK0n2OxTggtZcu0hraTWhMhtLW0oxmc", // <--- REPLACE THIS
+            authDomain: "studentinfo-fd67b.firebaseapp.com", // <--- REPLACE THIS
+            projectId: "studentinfo-fd67b", // <--- REPLACE THIS
+            storageBucket: "studentinfo-fd67b.firebasestorage.app", // <--- REPLACE THIS
+            messagingSenderId: "1023011026315", // <--- REPLACE THIS
+            appId: "1:1023011026315:web:455120a62b7a3c80e86b8e" // <--- REPLACE THIS
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const ADMIN_EMAIL = 'admin@university.edu'; // 🚨 MUST MATCH THE ADMIN USER YOU CREATED IN STEP 1 🚨
+
+        // --- COMMON UTILITY FUNCTIONS ---
+
+        function showSection(id) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.add('hidden');
+            document.getElementById('student-section').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            
+            if (id) {
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
+            }
+        }
+        
+        // New function to switch admin panels
+        function showAdminPanel(panelId) {
+            const dashboardPanel = document.getElementById('dashboard-panel');
+            const addStudentPanel = document.getElementById('add-student-panel');
+            const dashboardTab = document.getElementById('dashboard-tab');
+            const addStudentTab = document.getElementById('add-student-tab');
+            
+            dashboardPanel.classList.add('hidden');
+            addStudentPanel.classList.add('hidden');
+            
+            // Reset tab styles
+            [dashboardTab, addStudentTab].forEach(tab => {
+                tab.classList.remove('border-indigo-600', 'text-indigo-600');
+                tab.classList.add('text-gray-500', 'hover:text-indigo-600');
+            });
+
+            // Set active panel and tab style
+            if (panelId === 'dashboard-panel') {
+                dashboardPanel.classList.remove('hidden');
+                dashboardTab.classList.add('border-indigo-600', 'text-indigo-600');
+                dashboardTab.classList.remove('text-gray-500', 'hover:text-indigo-600');
+                fetchDashboardCounts(); // Load counts when dashboard is shown
+            } else if (panelId === 'add-student-panel') {
+                addStudentPanel.classList.remove('hidden');
+                addStudentTab.classList.add('border-indigo-600', 'text-indigo-600');
+                addStudentTab.classList.remove('text-gray-500', 'hover:text-indigo-600');
+            }
+        }
+
+        // --- AUTHENTICATION LOGIC ---
+        
+        // Listen for Auth State Changes
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                if (user.email === ADMIN_EMAIL) {
+                    showSection('admin-section');
+                    showAdminPanel('dashboard-panel'); // *** THIS IS KEY: Show dashboard first ***
+                } else {
+                    fetchStudentData(user.email); 
+                }
+            } else {
+                showSection('login-section');
+            }
+        });
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.classList.add('hidden');
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                errorDiv.textContent = 'Login failed: ' + error.message;
+                errorDiv.classList.remove('hidden');
+                console.error("Login Error:", error);
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        // --- DASHBOARD LOGIC (For counting students) ---
+        
+        async function fetchDashboardCounts() {
+            try {
+                // Fetch all documents in the 'students' collection
+                const snapshot = await db.collection("students").get();
+                
+                const totalStudents = snapshot.docs.length;
+                let activeEnrollment = 0;
+                let inactiveDropout = 0;
+                
+                snapshot.forEach(doc => {
+                    const studentData = doc.data();
+                    
+                    // Simple check: assuming a 'status' field exists in your student document.
+                    if (studentData.status === 'Inactive' || studentData.status === 'Dropout') {
+                         inactiveDropout++;
+                    } else {
+                        // Assuming default is active if no status or other status
+                        activeEnrollment++;
+                    }
+                });
+                
+                // Update the DOM elements
+                document.getElementById('dashboard-total-students').textContent = totalStudents;
+                document.getElementById('dashboard-active-enrollment').textContent = activeEnrollment;
+                document.getElementById('dashboard-inactive-dropout').textContent = inactiveDropout;
+                document.getElementById('dashboard-pending-actions').textContent = '4'; // Hardcoded as per image
+                
+                // You would also dynamically fill the student table here if needed.
+                if (totalStudents > 0) {
+                    populateStudentListTable(snapshot.docs);
+                } else {
+                     document.getElementById('student-list-body').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-lg text-gray-500">
+                                No students found. Add your first student to the system!
+                            </td>
+                        </tr>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Error fetching dashboard counts:", error);
+                document.getElementById('dashboard-total-students').textContent = '0';
+                document.getElementById('dashboard-active-enrollment').textContent = '0';
+                document.getElementById('dashboard-inactive-dropout').textContent = '0';
+            }
+        }
+
+        function populateStudentListTable(studentDocs) {
+            const tableBody = document.getElementById('student-list-body');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            studentDocs.forEach(doc => {
+                const data = doc.data();
+                // If you don't have 'grade' and 'status' fields, use placeholders
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${data.name || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.studentId || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.cgpa ? data.cgpa.toFixed(2) : 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.email || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${data.status === 'Inactive' || data.status === 'Dropout' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                ${data.status || 'Active'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                            <a href="#" class="ml-4 text-red-600 hover:text-red-900">Delete</a>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        
+        // --- ADMIN PANEL LOGIC (Existing form functions) ---
+
+        // Function to add a new result row in the admin form
+        function addResultField() {
+            const container = document.getElementById('results-container');
+            const html = `
+                <div class="flex space-x-2 result-entry">
+                    <input type="text" placeholder="Course Name (e.g., CS101)" class="w-2/5 p-2 border rounded" required>
+                    <input type="text" placeholder="Grade (e.g., A+)" class="w-1/5 p-2 border rounded" required>
+                    <input type="number" placeholder="Marks (e.g., 85)" class="w-1/5 p-2 border rounded" required>
+                    <button type="button" class="w-1/5 bg-red-400 text-white rounded" onclick="this.parentNode.remove()">Remove</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const sID = document.getElementById('sID').value.trim();
+            const sEmail = document.getElementById('sEmail').value.trim();
+            const sPassword = document.getElementById('sPassword').value;
+            const sName = document.getElementById('sName').value;
+            const sDept = document.getElementById('sDept').value;
+            const sCGPA = parseFloat(document.getElementById('sCGPA').value);
+            const sRoutine = document.getElementById('sRoutine').value;
+            const messageDiv = document.getElementById('admin-message');
+            
+            // 1. Gather Course Results
+            const results = [];
+            const entries = document.querySelectorAll('.result-entry');
+            let totalCredits = 0;
+
+            entries.forEach(entry => {
+                const inputs = entry.querySelectorAll('input');
+                results.push({
+                    course: inputs[0].value,
+                    grade: inputs[1].value,
+                    marks: parseInt(inputs[2].value)
+                });
+                totalCredits += 3; 
+            });
+
+            // 2. Add/Update Student Data in Firestore
+            try {
+                // You should probably add a 'status: "Active"' field here
+                const docRef = db.collection("students").doc(sEmail);
+
+                await docRef.set({
+                    studentId: sID,
+                    email: sEmail,
+                    name: sName,
+                    department: sDept,
+                    cgpa: sCGPA,
+                    totalCredits: totalCredits,
+                    routine: sRoutine,
+                    results: results,
+                    status: 'Active' // Added a default status for dashboard counting
+                });
+
+                messageDiv.textContent = `Student ${sName} (${sID}) data saved successfully! REMEMBER to manually create their account in Firebase Auth.`;
+                messageDiv.classList.remove('hidden');
+                
+            } catch (error) {
+                messageDiv.textContent = 'Error saving data: ' + error.message;
+                messageDiv.classList.remove('hidden');
+                console.error("Firestore Error:", error);
+            }
+        });
+
+        // --- STUDENT PANEL LOGIC ---
+
+        async function fetchStudentData(studentEmail) {
+            try {
+                const docRef = db.collection("students").doc(studentEmail);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    showSection('student-section');
+
+                    // Populate student main info
+                    document.getElementById('student-name').textContent = data.name;
+                    document.getElementById('s-dept').textContent = data.department;
+                    document.getElementById('s-cgpa').textContent = data.cgpa.toFixed(2);
+                    document.getElementById('s-credits').textContent = data.totalCredits;
+                    document.getElementById('s-routine').textContent = data.routine || 'Routine not yet posted.';
+                    
+                    // Populate Results Table
+                    const tableBody = document.getElementById('results-table-body');
+                    tableBody.innerHTML = ''; // Clear previous results
+                    
+                    data.results.forEach(result => {
+                        const row = tableBody.insertRow();
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${result.course}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.grade}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.marks}</td>
+                        `;
+                    });
+
+                } else {
+                    showSection(null); // Force logout/login page if data not found
+                    alert("Your student data was not found. Please contact the administrator.");
+                    logout();
+                }
+
+            } catch (error) {
+                console.error("Error fetching student data:", error);
+                alert("An error occurred while loading your data. Please try again.");
+                logout();
+            }
+        }
+    </script>
+</body>
+</html>
