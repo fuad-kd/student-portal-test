@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal & Admin Manager</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -27,7 +25,6 @@
 
     <div class="w-full max-w-5xl bg-white p-8 rounded-xl shadow-2xl mt-8">
         
-        <!-- Header -->
         <header class="flex justify-between items-center pb-4 border-b border-gray-200">
             <h1 class="text-4xl font-extrabold text-indigo-700 tracking-tight">University Student Portal</h1>
             <button id="logoutBtn" onclick="logout()" class="hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-200">
@@ -35,7 +32,6 @@
             </button>
         </header>
 
-        <!-- LOGIN SECTION -->
         <section id="login-section" class="mt-8">
             <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Login</h2>
@@ -48,56 +44,44 @@
             </div>
         </section>
 
-        <!-- ADMIN SECTION - NOW WITH TABS/PANELS -->
         <section id="admin-section" class="hidden mt-8">
             <h2 class="text-3xl font-bold mb-4 text-indigo-700">🏛️ Student Manager</h2>
             
-            <!-- Admin Navigation (Tabs) -->
             <div class="flex border-b border-gray-300 mb-6">
-                <!-- Dashboard Tab -->
                 <button onclick="showAdminPanel('dashboard-panel')" id="dashboard-tab" class="px-4 py-2 text-lg font-medium border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-150">Dashboard</button>
-                <!-- Add Student Tab (Your original form) -->
                 <button onclick="showAdminPanel('add-student-panel')" id="add-student-tab" class="px-4 py-2 text-lg font-medium text-gray-500 hover:text-indigo-600 transition-colors duration-150">Add/Edit Student Data</button>
                 
-                <!-- Add New Student Button (As seen in the image) -->
                 <button class="ml-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200" onclick="showAdminPanel('add-student-panel')">
                     + Add New Student
                 </button>
             </div>
 
-            <!-- DASHBOARD PANEL (Student List & Counts) -->
             <div id="dashboard-panel" class="">
                 <h3 class="text-xl font-semibold mb-4 text-gray-700">Student Details</h3>
                 
-                <!-- Dashboard Cards Grid (Summary Panel) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     
-                    <!-- Total Students Card -->
                     <div class="bg-white p-4 rounded-lg shadow-md card-border-blue">
                         <p class="text-gray-500 font-medium">Total Students</p>
                         <p id="dashboard-total-students" class="text-3xl font-bold text-gray-900 mt-1">0</p>
                     </div>
 
-                    <!-- Active Enrollment Card -->
                     <div class="bg-white p-4 rounded-lg shadow-md card-border-green">
                         <p class="text-gray-500 font-medium">Active Enrollment</p>
                         <p id="dashboard-active-enrollment" class="text-3xl font-bold text-green-600 mt-1">0</p>
                     </div>
 
-                    <!-- Inactive/Dropout Card -->
                     <div class="bg-white p-4 rounded-lg shadow-md card-border-red">
                         <p class="text-gray-500 font-medium">Inactive/Dropout</p>
                         <p id="dashboard-inactive-dropout" class="text-3xl font-bold text-red-600 mt-1">0</p>
                     </div>
 
-                    <!-- Pending Actions Card -->
                     <div class="bg-white p-4 rounded-lg shadow-md card-border-orange">
                         <p class="text-gray-500 font-medium">Pending Actions</p>
                         <p id="dashboard-pending-actions" class="text-3xl font-bold text-orange-600 mt-1">4</p>
                     </div>
                 </div>
 
-                <!-- Student List/Search Section -->
                 <div class="bg-white p-6 rounded-lg shadow-xl">
                     <input type="text" 
                         id="search-input" 
@@ -129,16 +113,13 @@
                 </div>
             </div>
 
-            <!-- ADD STUDENT PANEL (Form) -->
             <div id="add-student-panel" class="hidden">
                 <h3 class="text-xl font-semibold mb-4 text-gray-700"><span id="form-title">Add Student Data Form</span></h3>
                 <div class="bg-white p-6 rounded-lg shadow-xl">
                     <form id="addStudentForm" class="space-y-4">
                         <input type="hidden" id="originalEmail" value="">
                         <input type="text" id="sID" placeholder="Student ID (e.g., S2023001)" class="w-full p-3 border rounded" required>
-                        <!-- Email field is readonly during edit to prevent changing the document ID -->
                         <input type="email" id="sEmail" placeholder="Email (for login/contact)" class="w-full p-3 border rounded" required>
-                        <!-- Password is only required when adding a new student -->
                         <input type="password" id="sPassword" placeholder="Temporary Password (required for new student)" class="w-full p-3 border rounded">
                         <input type="text" id="sName" placeholder="Student Name" class="w-full p-3 border rounded" required>
                         <input type="text" id="sDept" placeholder="Department Name" class="w-full p-3 border rounded" required>
@@ -153,7 +134,6 @@
 
                         <h3 class="text-xl font-semibold mt-6 mb-2">Course Results</h3>
                         <div id="results-container" class="space-y-2">
-                            <!-- Initial result field for structure. Will be cleared/populated dynamically -->
                             <div class="flex space-x-2 result-entry">
                                 <input type="text" placeholder="Course Name (e.g., CS101)" class="w-2/5 p-2 border rounded" required>
                                 <input type="text" placeholder="Grade (e.g., A+)" class="w-1/5 p-2 border rounded" required>
@@ -168,42 +148,37 @@
 
                         <button type="submit" id="submit-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded mt-6">Add/Update Student</button>
                         <button type="button" onclick="resetForm()" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 rounded mt-2">Reset Form / Add New</button>
-                        <div id="admin-message" class="mt-4 text-center text-green-600 hidden"></div>
+                        <div id="admin-message" class="mt-4 text-center text-green-600 hidden flex flex-col items-center p-4 border rounded-lg bg-green-50">
+                            <!-- Success message and links will be injected here -->
+                        </div>
                     </form>
                 </div>
             </div>
         </section>
 
-        <!-- STUDENT SECTION -->
         <section id="student-section" class="hidden mt-8">
-            <!-- Student data will be populated here -->
             <h2 class="text-3xl font-bold mb-6 text-indigo-700 border-b pb-2">Welcome, <span id="student-name">Student</span>!</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Info Card 1 -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <p class="text-gray-500 font-medium">Department</p>
                     <p id="s-dept" class="text-2xl font-bold text-gray-900 mt-1">N/A</p>
                 </div>
-                <!-- Info Card 2 -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <p class="text-gray-500 font-medium">Current CGPA</p>
                     <p id="s-cgpa" class="text-2xl font-bold text-green-600 mt-1">N/A</p>
                 </div>
-                <!-- Info Card 3 -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <p class="text-gray-500 font-medium">Total Credits</p>
                     <p id="s-credits" class="text-2xl font-bold text-indigo-600 mt-1">0</p>
                 </div>
             </div>
 
-            <!-- Routine Section -->
             <div class="bg-white p-6 rounded-lg shadow-xl mb-8">
                 <h3 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Weekly Routine & Courses</h3>
                 <pre id="s-routine" class="whitespace-pre-wrap text-gray-700 bg-gray-50 p-4 rounded"></pre>
             </div>
             
-            <!-- Results Table -->
             <div class="bg-white p-6 rounded-lg shadow-xl">
                 <h3 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Academic Results</h3>
                 <div class="overflow-x-auto">
@@ -216,8 +191,7 @@
                             </tr>
                         </thead>
                         <tbody id="results-table-body" class="bg-white divide-y divide-gray-200">
-                            <!-- Results rows will be inserted here -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -225,7 +199,6 @@
 
     </div>
 
-    <!-- Confirmation Modal Structure (Hidden by default) -->
     <div id="delete-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center opacity-0 pointer-events-none z-50">
         <div class="bg-white p-6 rounded-lg shadow-2xl max-w-sm w-full transform transition-all duration-300">
             <h3 class="text-xl font-bold text-red-600 mb-4">Confirm Deletion</h3>
@@ -241,7 +214,6 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
         // 🚨 STEP 1: REPLACE WITH YOUR ACTUAL FIREBASE CONFIG 🚨
         const firebaseConfig = {
@@ -306,6 +278,9 @@
                 addStudentPanel.classList.remove('hidden');
                 addStudentTab.classList.add('border-indigo-600', 'text-indigo-600', 'border-b-2');
                 addStudentTab.classList.remove('text-gray-500', 'hover:text-indigo-600');
+                
+                // When navigating back to the form, hide the success message
+                document.getElementById('admin-message').classList.add('hidden');
             }
         }
 
@@ -314,8 +289,12 @@
             document.getElementById('originalEmail').value = '';
             document.getElementById('sEmail').readOnly = false;
             document.getElementById('sPassword').required = true;
+            document.getElementById('sPassword').placeholder = "Temporary Password (required for new student)"; // Reset placeholder
             document.getElementById('form-title').textContent = 'Add Student Data Form';
             document.getElementById('submit-button').textContent = 'Add Student';
+            document.getElementById('admin-message').classList.add('hidden');
+            
+            // Re-populate with a single empty result field
             document.getElementById('results-container').innerHTML = `
                 <div class="flex space-x-2 result-entry">
                     <input type="text" placeholder="Course Name (e.g., CS101)" class="w-2/5 p-2 border rounded" required>
@@ -323,7 +302,6 @@
                     <input type="number" placeholder="Marks (e.g., 85)" class="w-1/5 p-2 border rounded" required>
                     <button type="button" class="w-1/5 bg-red-400 text-white rounded" onclick="this.parentNode.remove()">Remove</button>
                 </div>`;
-            document.getElementById('admin-message').classList.add('hidden');
         }
 
         // --- AUTHENTICATION LOGIC ---
@@ -476,15 +454,18 @@
                     
                     // Switch to the Add/Edit panel
                     showAdminPanel('add-student-panel');
+                    document.getElementById('admin-message').classList.add('hidden'); // Ensure message is hidden on edit start
 
                     // Set form state for editing
                     document.getElementById('originalEmail').value = email;
                     document.getElementById('sEmail').value = email;
                     document.getElementById('sEmail').readOnly = true; // Prevent changing email (Doc ID) during edit
                     document.getElementById('sPassword').required = false; // Password is not required for update
+                    document.getElementById('sPassword').value = ''; // Clear password field for security
+                    document.getElementById('sPassword').placeholder = 'Enter new password to change (leave blank for no change)';
                     document.getElementById('form-title').textContent = 'Edit Student Data';
                     document.getElementById('submit-button').textContent = 'Update Student';
-                    document.getElementById('admin-message').classList.add('hidden');
+                    
 
                     // Populate form fields
                     document.getElementById('sID').value = data.studentId || '';
@@ -511,8 +492,8 @@
                             container.insertAdjacentHTML('beforeend', html);
                         });
                     } else {
-                         // Add a default empty entry if no results exist
-                        addResultField();
+                           // Add a default empty entry if no results exist
+                         addResultField();
                     }
 
                 } else {
@@ -584,129 +565,212 @@
             const sID = document.getElementById('sID').value.trim();
             const sEmail = document.getElementById('sEmail').value.trim();
             const sPassword = document.getElementById('sPassword').value;
-            const sName = document.getElementById('sName').value;
-            const sDept = document.getElementById('sDept').value;
+            const sName = document.getElementById('sName').value.trim();
+            const sDept = document.getElementById('sDept').value.trim();
             const sCGPA = parseFloat(document.getElementById('sCGPA').value);
-            const sRoutine = document.getElementById('sRoutine').value;
+            const sRoutine = document.getElementById('sRoutine').value.trim();
             const sStatus = document.getElementById('sStatus').value;
-            const originalEmail = document.getElementById('originalEmail').value; 
-            const messageDiv = document.getElementById('admin-message');
-            
-            // 1. Gather Course Results
-            const results = [];
-            const entries = document.querySelectorAll('.result-entry');
-            let totalCredits = 0;
+            const originalEmail = document.getElementById('originalEmail').value.trim(); // Only set when editing
 
-            entries.forEach(entry => {
+            const messageDiv = document.getElementById('admin-message');
+            messageDiv.classList.add('hidden');
+            messageDiv.classList.remove('text-red-600', 'text-green-600', 'border-red-200');
+            messageDiv.classList.add('border-green-200'); // Default success style
+            messageDiv.innerHTML = ''; // Clear previous messages/buttons
+
+            // 1. Collect Course Results
+            const results = [];
+            const resultEntries = document.querySelectorAll('#results-container .result-entry');
+            resultEntries.forEach(entry => {
                 const inputs = entry.querySelectorAll('input');
-                results.push({
-                    course: inputs[0].value,
-                    grade: inputs[1].value,
-                    marks: parseInt(inputs[2].value)
-                });
-                totalCredits += 3; 
+                if (inputs[0].value.trim() && inputs[1].value.trim() && inputs[2].value.trim()) {
+                    results.push({
+                        course: inputs[0].value.trim(),
+                        grade: inputs[1].value.trim(),
+                        marks: parseInt(inputs[2].value)
+                    });
+                }
             });
 
-            // 2. Add/Update Student Data in Firestore
+            // Student Data object to save in Firestore
+            const studentData = {
+                studentId: sID,
+                email: sEmail,
+                name: sName,
+                department: sDept,
+                cgpa: sCGPA,
+                routine: sRoutine,
+                status: sStatus,
+                results: results,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            const isEditing = originalEmail !== '';
+
             try {
-                // If originalEmail is set, we are editing. Otherwise, we are adding/using sEmail as doc ID.
-                const docRef = db.collection("students").doc(sEmail);
+                // --- ADMIN AUTH (USER CREATION/UPDATE) ---
 
-                // Data to save
-                const studentData = {
-                    studentId: sID,
-                    email: sEmail,
-                    name: sName,
-                    department: sDept,
-                    cgpa: sCGPA,
-                    totalCredits: totalCredits,
-                    routine: sRoutine,
-                    results: results,
-                    status: sStatus
-                };
-
-                await docRef.set(studentData, { merge: true });
-
-                // Handle password update/creation (only if a password was provided)
-                if (sPassword) {
-                    try {
-                        const user = await auth.createUserWithEmailAndPassword(sEmail, sPassword);
-                        console.log("User created or updated in Auth:", user.user.uid);
-                    } catch (authError) {
-                         // This is often expected during an EDIT if the user already exists.
-                         // For a real app, you'd use a cloud function to manage student passwords safely.
-                         console.warn("Auth update issue (may be okay if editing existing user):", authError.message);
+                if (!isEditing) {
+                    // **A. Creating a new user via Firebase Auth**
+                    if (!sPassword) {
+                        throw new Error("Temporary password is required when adding a new student.");
                     }
+                    await auth.createUserWithEmailAndPassword(sEmail, sPassword);
+                    messageDiv.innerHTML = `<span class="text-lg font-semibold text-green-700">✅ Student ${sName} added successfully!</span>`;
+                } else {
+                    // **B. Handling user update:**
+                    messageDiv.innerHTML = `<span class="text-lg font-semibold text-green-700">✅ Student ${sName} successfully updated.</span>`;
                 }
 
-
-                messageDiv.textContent = `Student ${sName} (${sID}) data saved successfully!`;
-                messageDiv.classList.remove('hidden', 'text-red-600');
-                messageDiv.classList.add('text-green-600');
+                // --- FIRESTORE DATA STORAGE ---
                 
-                // Clear form if it was a new student entry
-                if (!originalEmail) {
-                    resetForm();
-                }
+                // Use the student's email as the document ID for easy lookup.
+                await db.collection("students").doc(sEmail).set(studentData, { merge: true });
 
-                // Refresh the dashboard list to see the change
-                if (document.getElementById('dashboard-panel').classList.contains('hidden') === false) {
-                    fetchDashboardCounts();
-                }
+                
+                messageDiv.classList.remove('hidden', 'text-red-600', 'border-red-200');
+                messageDiv.classList.add('text-green-600', 'border-green-200');
+                
+                // --- POST-SUCCESS NAVIGATION/ACTION ---
+                
+                // Add action buttons
+                messageDiv.innerHTML += `
+                    <div class="flex flex-col space-y-2 mt-4 w-full max-w-sm">
+                        <button type="button" onclick="showAdminPanel('dashboard-panel')" 
+                                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-200 shadow-md">
+                            Go to Dashboard (View All Students)
+                        </button>
+                        <button type="button" onclick="resetForm()" 
+                                class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition duration-200 shadow-md">
+                            Add Another Student (Stay Here)
+                        </button>
+                    </div>
+                `;
+
+                // Clear the form fields but keep the user on the add-student panel
+                resetForm(); 
+
+                // Ensure Dashboard list is updated in background
+                fetchDashboardCounts(); 
 
             } catch (error) {
-                messageDiv.textContent = 'Error saving data: ' + error.message;
-                messageDiv.classList.remove('hidden', 'text-green-600');
-                messageDiv.classList.add('text-red-600');
-                console.error("Firestore Error:", error);
+                // Handle Firebase Auth errors (e.g., email already in use, weak password) 
+                let errorMessage = error.message;
+
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Email is already registered. Use a unique email or edit the existing record.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Password must be at least 6 characters.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address format.';
+                } else if (error.message.includes("Temporary password is required")) {
+                    errorMessage = error.message;
+                }
+                
+                messageDiv.textContent = `Operation Failed: ${errorMessage}`;
+                messageDiv.classList.remove('hidden', 'text-green-600', 'border-green-200');
+                messageDiv.classList.add('text-red-600', 'border-red-200');
+                console.error("Form Submission Error:", error);
             }
         });
 
-        // --- STUDENT PANEL LOGIC ---
-        async function fetchStudentData(studentEmail) {
+        // --- STUDENT VIEW LOGIC ---
+
+        async function fetchStudentData(email) {
             try {
-                const docRef = db.collection("students").doc(studentEmail);
+                const docRef = db.collection("students").doc(email);
                 const doc = await docRef.get();
 
                 if (doc.exists) {
                     const data = doc.data();
                     showSection('student-section');
 
-                    document.getElementById('student-name').textContent = data.name;
-                    document.getElementById('s-dept').textContent = data.department;
+                    document.getElementById('student-name').textContent = data.name || 'Student';
+                    document.getElementById('s-dept').textContent = data.department || 'N/A';
                     document.getElementById('s-cgpa').textContent = data.cgpa ? data.cgpa.toFixed(2) : 'N/A';
-                    document.getElementById('s-credits').textContent = data.totalCredits || '0';
-                    document.getElementById('s-routine').textContent = data.routine || 'Routine not yet posted.';
+                    document.getElementById('s-routine').textContent = data.routine || 'No routine information available.';
                     
+                    // Populate results table
                     const tableBody = document.getElementById('results-table-body');
-                    tableBody.innerHTML = ''; 
-                    
+                    tableBody.innerHTML = '';
+                    let totalCredits = 0;
+
                     if (data.results && data.results.length > 0) {
                         data.results.forEach(result => {
-                            const row = tableBody.insertRow();
-                            row.innerHTML = `
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${result.course}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.grade}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.marks}</td>
+                            const row = `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${result.course || 'N/A'}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.grade || 'N/A'}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.marks || 'N/A'}</td>
+                                </tr>
                             `;
+                            tableBody.insertAdjacentHTML('beforeend', row);
+                            totalCredits += 3;
                         });
+                        document.getElementById('s-credits').textContent = totalCredits;
                     } else {
                         tableBody.innerHTML = `
-                            <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No results recorded yet.</td></tr>
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-center text-gray-500">No academic results found.</td>
+                            </tr>
                         `;
                     }
 
+
                 } else {
-                    console.error("Student data not found for email:", studentEmail); 
-                    // Optionally force logout if data is missing for the logged-in user
-                    // logout(); 
+                    // Student user is logged in but no data in Firestore
+                    showSection('student-section');
+                    document.getElementById('student-name').textContent = "User";
+                    document.getElementById('s-dept').textContent = "Record Missing";
+                    document.getElementById('s-cgpa').textContent = "N/A";
+                    document.getElementById('s-routine').textContent = "Your administrative record could not be found. Please contact the admin.";
+                    document.getElementById('results-table-body').innerHTML = `
+                        <tr><td colspan="3" class="px-6 py-4 text-center text-red-500">Record Missing</td></tr>
+                    `;
                 }
 
             } catch (error) {
                 console.error("Error fetching student data:", error);
-                // logout();
+                document.getElementById('student-name').textContent = "Error";
+                document.getElementById('s-dept').textContent = "Error";
+                document.getElementById('s-cgpa').textContent = "Error";
+                document.getElementById('s-routine').textContent = "An error occurred while loading your data.";
             }
         }
+        
+        // --- ENHANCED FUNCTIONALITY: Student ID auto-populates Password field (ONLY for New Students) ---
+        document.addEventListener('DOMContentLoaded', () => {
+             const sIDInput = document.getElementById('sID');
+             const sPasswordInput = document.getElementById('sPassword');
+             const originalEmailInput = document.getElementById('originalEmail');
+             
+             const updatePassword = () => {
+                 // Check if we are in 'Add New' mode (originalEmail is empty) and the password field is required
+                 const isNewStudentMode = originalEmailInput.value === '';
+                 
+                 // Also ensure the password field is editable (not readonly/disabled)
+                 if (isNewStudentMode) {
+                     // Set the password to the Student ID
+                     sPasswordInput.value = sIDInput.value.trim();
+                 }
+             };
+
+             // 1. Listen for input changes on the Student ID field
+             sIDInput.addEventListener('input', updatePassword);
+             
+             // 2. We can override the resetForm function to explicitly apply the logic after a reset
+             // This ensures if the browser autofills the ID, the password is set too.
+             const originalResetForm = window.resetForm;
+             window.resetForm = function() {
+                 originalResetForm.apply(this, arguments);
+                 // Check if the sID already has a value (e.g., from a browser cache fill), set the password immediately
+                 if (sIDInput.value.trim() !== '') {
+                     updatePassword();
+                 }
+             };
+        });
+        // --- END ENHANCED FUNCTIONALITY ---
+
     </script>
 </body>
 </html>
