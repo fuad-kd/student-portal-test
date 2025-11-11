@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Student Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* Simple style to hide/show sections */
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center">
+
+    <header class="w-full bg-indigo-600 p-4 text-white shadow-md flex justify-between items-center">
+        <h1 class="text-2xl font-bold">University Portal</h1>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded hidden" onclick="logout()">Logout</button>
+    </header>
+
+    <main class="w-full max-w-4xl p-6">
+
+        <section id="login-section" class="bg-white p-6 rounded-lg shadow-xl mt-10 w-full max-w-md mx-auto">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-indigo-700">Login</h2>
+            <div id="login-error" class="text-red-500 mb-4 hidden"></div>
+            <input type="email" id="loginEmail" placeholder="Email or Student ID (Admin: admin@...)" class="w-full p-3 mb-4 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500" required>
+            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 mb-6 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500" required>
+            <button onclick="login()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded transition duration-200">Sign In</button>
+        </section>
+
+        <section id="admin-section" class="hidden mt-8">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-700">🏛️ Admin Panel: Add Student Data</h2>
+            <div class="bg-white p-6 rounded-lg shadow-xl">
+                <form id="addStudentForm" class="space-y-4">
+                    <input type="text" id="sID" placeholder="Student ID (e.g., S2023001)" class="w-full p-3 border rounded" required>
+                    <input type="email" id="sEmail" placeholder="Email (for login/contact)" class="w-full p-3 border rounded" required>
+                    <input type="password" id="sPassword" placeholder="Temporary Password (for student login)" class="w-full p-3 border rounded" required>
+                    <input type="text" id="sName" placeholder="Student Name" class="w-full p-3 border rounded" required>
+                    <input type="text" id="sDept" placeholder="Department Name" class="w-full p-3 border rounded" required>
+                    <input type="number" step="0.01" id="sCGPA" placeholder="Current CGPA" class="w-full p-3 border rounded" required>
+
+                    <h3 class="text-xl font-semibold mt-6 mb-2">Course Results</h3>
+                    <div id="results-container" class="space-y-2">
+                        <div class="flex space-x-2 result-entry">
+                            <input type="text" placeholder="Course Name (e.g., CS101)" class="w-2/5 p-2 border rounded" required>
+                            <input type="text" placeholder="Grade (e.g., A+)" class="w-1/5 p-2 border rounded" required>
+                            <input type="number" placeholder="Marks (e.g., 85)" class="w-1/5 p-2 border rounded" required>
+                            <button type="button" class="w-1/5 bg-red-400 text-white rounded" onclick="this.parentNode.remove()">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addResultField()" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">Add Course</button>
+                    
+                    <h3 class="text-xl font-semibold mt-6 mb-2">Routine/Courses</h3>
+                    <textarea id="sRoutine" placeholder="Routine & Course List (text area for display on student side)" class="w-full p-3 border rounded h-32"></textarea>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded mt-6">Add/Update Student</button>
+                    <div id="admin-message" class="mt-4 text-center text-green-600 hidden"></div>
+                </form>
+            </div>
+        </section>
+
+        <section id="student-section" class="hidden mt-8">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-700">🧑‍🎓 Welcome, <span id="student-name" class="text-orange-500"></span>!</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-4 rounded-lg shadow-md text-center">
+                    <p class="text-lg text-gray-500">Department</p>
+                    <p id="s-dept" class="text-2xl font-semibold text-indigo-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-center">
+                    <p class="text-lg text-gray-500">CGPA</p>
+                    <p id="s-cgpa" class="text-3xl font-bold text-green-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md text-center">
+                    <p class="text-lg text-gray-500">Total Credits</p>
+                    <p id="s-credits" class="text-2xl font-semibold text-indigo-600">-</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl mb-8">
+                <h3 class="text-2xl font-semibold mb-4 text-indigo-700">Course Results</h3>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-indigo-700">Routine & Course List</h3>
+                <p id="s-routine" class="whitespace-pre-wrap text-gray-700"></p>
+            </div>
+        </section>
+        
+    </main>
+
+    <script>
+        // 🚨 STEP 1: REPLACE WITH YOUR ACTUAL FIREBASE CONFIG 🚨
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY", // <--- REPLACE THIS
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // <--- REPLACE THIS
+            projectId: "YOUR_PROJECT_ID", // <--- REPLACE THIS
+            storageBucket: "YOUR_PROJECT_ID.appspot.com", // <--- REPLACE THIS
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // <--- REPLACE THIS
+            appId: "YOUR_APP_ID" // <--- REPLACE THIS
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const ADMIN_EMAIL = 'admin@university.edu'; // 🚨 MUST MATCH THE ADMIN USER YOU CREATED IN STEP 1 🚨
+
+        // --- COMMON UTILITY FUNCTIONS ---
+
+        function showSection(id) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.add('hidden');
+            document.getElementById('student-section').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            
+            if (id) {
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
+            }
+        }
+
+        // --- AUTHENTICATION LOGIC ---
+        
+        // Listen for Auth State Changes
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                if (user.email === ADMIN_EMAIL) {
+                    showSection('admin-section');
+                } else {
+                    // Assume non-admin users are students, use UID (which will be Student ID) to fetch data
+                    // Note: If you use Email/Password for student login, the user.email is the identifier.
+                    // For this simple example, we'll assume the student's email/ID is the key.
+                    // A better practice would be to use a separate field for Student ID.
+                    // For simplicity, we'll use the user's email as the "Student ID" key in Firestore
+                    fetchStudentData(user.email); 
+                }
+            } else {
+                showSection('login-section');
+            }
+        });
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.classList.add('hidden');
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                // Auth state listener handles the section display
+            } catch (error) {
+                errorDiv.textContent = 'Login failed: ' + error.message;
+                errorDiv.classList.remove('hidden');
+                console.error("Login Error:", error);
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        // --- ADMIN PANEL LOGIC ---
+
+        // Function to add a new result row in the admin form
+        function addResultField() {
+            const container = document.getElementById('results-container');
+            const html = `
+                <div class="flex space-x-2 result-entry">
+                    <input type="text" placeholder="Course Name (e.g., CS101)" class="w-2/5 p-2 border rounded" required>
+                    <input type="text" placeholder="Grade (e.g., A+)" class="w-1/5 p-2 border rounded" required>
+                    <input type="number" placeholder="Marks (e.g., 85)" class="w-1/5 p-2 border rounded" required>
+                    <button type="button" class="w-1/5 bg-red-400 text-white rounded" onclick="this.parentNode.remove()">Remove</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const sID = document.getElementById('sID').value.trim();
+            const sEmail = document.getElementById('sEmail').value.trim();
+            const sPassword = document.getElementById('sPassword').value;
+            const sName = document.getElementById('sName').value;
+            const sDept = document.getElementById('sDept').value;
+            const sCGPA = parseFloat(document.getElementById('sCGPA').value);
+            const sRoutine = document.getElementById('sRoutine').value;
+            const messageDiv = document.getElementById('admin-message');
+            
+            // 1. Gather Course Results
+            const results = [];
+            const entries = document.querySelectorAll('.result-entry');
+            let totalCredits = 0; // Assuming total credits is a simple sum for this example
+
+            entries.forEach(entry => {
+                const inputs = entry.querySelectorAll('input');
+                results.push({
+                    course: inputs[0].value,
+                    grade: inputs[1].value,
+                    marks: parseInt(inputs[2].value)
+                });
+                // In a real system, you'd look up course credits. For simplicity, we'll just increment.
+                totalCredits += 3; 
+            });
+
+            // 2. Add/Update Student Data in Firestore
+            try {
+                // Use the student's email as the Document ID for simple linking
+                const docRef = db.collection("students").doc(sEmail);
+
+                await docRef.set({
+                    studentId: sID,
+                    email: sEmail,
+                    name: sName,
+                    department: sDept,
+                    cgpa: sCGPA,
+                    totalCredits: totalCredits,
+                    routine: sRoutine,
+                    results: results 
+                });
+
+                // 3. Create/Update Student Login Account in Firebase Auth
+                // NOTE: This part is complex to do directly from the client (GitHub Pages)
+                // without an Admin SDK. For a simple test, the admin should manually 
+                // create the student's account in the Firebase Auth console using their email 
+                // and the temporary password. 
+                // The following line is for illustration only, direct client-side creation 
+                // of *other* users is generally disabled for security unless rules are relaxed.
+                // For this project, **manual creation of student accounts is the easiest free step**.
+                
+                messageDiv.textContent = `Student ${sName} (${sID}) data saved successfully! REMEMBER to manually create their account in Firebase Auth.`;
+                messageDiv.classList.remove('hidden');
+                
+            } catch (error) {
+                messageDiv.textContent = 'Error saving data: ' + error.message;
+                messageDiv.classList.remove('hidden');
+                console.error("Firestore Error:", error);
+            }
+        });
+
+        // --- STUDENT PANEL LOGIC ---
+
+        async function fetchStudentData(studentEmail) {
+            try {
+                // Get student document using the email as the key
+                const docRef = db.collection("students").doc(studentEmail);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    showSection('student-section');
+
+                    // Populate student main info
+                    document.getElementById('student-name').textContent = data.name;
+                    document.getElementById('s-dept').textContent = data.department;
+                    document.getElementById('s-cgpa').textContent = data.cgpa.toFixed(2);
+                    document.getElementById('s-credits').textContent = data.totalCredits;
+                    document.getElementById('s-routine').textContent = data.routine || 'Routine not yet posted.';
+                    
+                    // Populate Results Table
+                    const tableBody = document.getElementById('results-table-body');
+                    tableBody.innerHTML = ''; // Clear previous results
+                    
+                    data.results.forEach(result => {
+                        const row = tableBody.insertRow();
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${result.course}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.grade}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${result.marks}</td>
+                        `;
+                    });
+
+                } else {
+                    showSection(null); // Force logout/login page if data not found
+                    alert("Your student data was not found. Please contact the administrator.");
+                    logout();
+                }
+
+            } catch (error) {
+                console.error("Error fetching student data:", error);
+                alert("An error occurred while loading your data. Please try again.");
+                logout();
+            }
+        }
+    </script>
+</body>
+</html>
