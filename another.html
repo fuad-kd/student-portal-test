@@ -12,12 +12,11 @@
     <style>
         /* Simple style to hide/show sections */
         .hidden { display: none; }
-        /* Active Admin Tab Style */
-        .admin-tab.active {
-            border-bottom: 3px solid #f97316; /* Tailwind orange-500 */
-            color: #f97316; /* Tailwind orange-500 */
-            font-weight: 600;
-        }
+        /* Custom style for the panel cards to match the image */
+        .card-border-blue { border-top: 5px solid #3b82f6; } /* Tailwind blue-500 */
+        .card-border-green { border-top: 5px solid #22c55e; } /* Tailwind green-500 */
+        .card-border-red { border-top: 5px solid #ef4444; } /* Tailwind red-500 */
+        .card-border-orange { border-top: 5px solid #f97316; } /* Tailwind orange-600 */
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center">
@@ -27,9 +26,7 @@
         <button id="logoutBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded hidden" onclick="logout()">Logout</button>
     </header>
 
-    <main class="w-full max-w-4xl p-6">
-
-        <section id="login-section" class="bg-white p-6 rounded-lg shadow-xl mt-10 w-full max-w-md mx-auto">
+    <main class="w-full max-w-6xl p-6"> <section id="login-section" class="bg-white p-6 rounded-lg shadow-xl mt-10 w-full max-w-md mx-auto">
             <h2 class="text-2xl font-semibold mb-6 text-center text-indigo-700">Login</h2>
             <div id="login-error" class="text-red-500 mb-4 hidden"></div>
             <input type="email" id="loginEmail" placeholder="Email or Student ID (Admin: admin@...)" class="w-full p-3 mb-4 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500" required>
@@ -38,64 +35,74 @@
         </section>
 
         <section id="admin-section" class="hidden mt-8">
-            <h2 class="text-3xl font-bold mb-4 text-indigo-700">🏛️ Admin Dashboard</h2>
+            <h2 class="text-3xl font-bold mb-4 text-indigo-700">🏛️ Student Manager</h2>
             
-            <nav class="flex border-b border-gray-300 mb-6 bg-white rounded-t-lg shadow-md">
-                <button id="tab-list" class="admin-tab p-4 text-lg text-gray-600 hover:text-orange-500 transition duration-150 active" onclick="showAdminTab('admin-list-tab')">Student Details</button>
-                <button id="tab-add" class="admin-tab p-4 text-lg text-gray-600 hover:text-orange-500 transition duration-150" onclick="showAdminTab('admin-add-tab')">Add/Edit Student</button>
-            </nav>
+            <div class="flex border-b border-gray-300 mb-6">
+                <button onclick="showAdminPanel('dashboard-panel')" id="dashboard-tab" class="px-4 py-2 text-lg font-medium border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-150">Dashboard</button>
+                <button onclick="showAdminPanel('add-student-panel')" id="add-student-tab" class="px-4 py-2 text-lg font-medium text-gray-500 hover:text-indigo-600 hover:border-indigo-600 transition-colors duration-150">Add/Edit Student Data</button>
+                
+                <button class="ml-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200" onclick="showAdminPanel('add-student-panel')">
+                    + Add New Student
+                </button>
+            </div>
 
-            <div id="admin-list-tab">
-                <div class="grid grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-4 rounded-lg shadow-xl text-center">
-                        <p class="text-xl font-bold text-gray-800">Total Students</p>
-                        <p id="stat-total" class="text-3xl font-extrabold text-blue-600 mt-1">0</p>
+            <div id="dashboard-panel" class="">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">Student Details</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-blue">
+                        <p class="text-gray-500 font-medium">Total Students</p>
+                        <p id="dashboard-total-students" class="text-3xl font-bold text-gray-900 mt-1">0</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-xl text-center">
-                        <p class="text-xl font-bold text-gray-800">Active Enrollment</p>
-                        <p id="stat-active" class="text-3xl font-extrabold text-green-600 mt-1">0</p>
+
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-green">
+                        <p class="text-gray-500 font-medium">Active Enrollment</p>
+                        <p id="dashboard-active-enrollment" class="text-3xl font-bold text-green-600 mt-1">0</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-xl text-center">
-                        <p class="text-xl font-bold text-gray-800">Inactive/Dropout</p>
-                        <p id="stat-inactive" class="text-3xl font-extrabold text-red-600 mt-1">0</p>
+
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-red">
+                        <p class="text-gray-500 font-medium">Inactive/Dropout</p>
+                        <p id="dashboard-inactive-dropout" class="text-3xl font-bold text-red-600 mt-1">0</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-xl text-center">
-                        <p class="text-xl font-bold text-gray-800">Pending Actions</p>
-                        <p id="stat-pending" class="text-3xl font-extrabold text-yellow-600 mt-1">4</p>
+
+                    <div class="bg-white p-4 rounded-lg shadow-md card-border-orange">
+                        <p class="text-gray-500 font-medium">Pending Actions</p>
+                        <p id="dashboard-pending-actions" class="text-3xl font-bold text-orange-600 mt-1">4</p>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center mb-6">
-                    <input type="text" id="student-search" onkeyup="filterStudentList()" placeholder="Search by name, ID, or grade..." class="w-3/5 p-3 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
-                    <button onclick="showAdminTab('admin-add-tab')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                        Add New Student
-                    </button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-xl overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <th class="px-3 py-3">Name</th>
-                                <th class="px-3 py-3">Student ID</th>
-                                <th class="px-3 py-3">Grade/CGPA</th>
-                                <th class="px-3 py-3">Email</th>
-                                <th class="px-3 py-3">Status</th>
-                                <th class="px-3 py-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="student-list-body" class="bg-white divide-y divide-gray-200">
-                            <tr><td colspan="6" class="text-center py-8 text-gray-500 font-semibold">No students found. Add your first student to the system!</td></tr>
-                        </tbody>
-                    </table>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <input type="text" placeholder="Search by name, ID, or grade..." class="w-full p-3 mb-6 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAME</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STUDENT ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GRADE</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list-body" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-lg text-gray-500">
+                                        No students found. Add your first student to the system!
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <div id="admin-add-tab" class="hidden">
+            <div id="add-student-panel" class="hidden">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">Add Student Data Form</h3>
                 <div class="bg-white p-6 rounded-lg shadow-xl">
                     <form id="addStudentForm" class="space-y-4">
-                        <h3 class="text-2xl font-semibold mb-4 text-indigo-700">Add New Student Record</h3>
                         <input type="text" id="sID" placeholder="Student ID (e.g., S2023001)" class="w-full p-3 border rounded" required>
                         <input type="email" id="sEmail" placeholder="Email (for login/contact)" class="w-full p-3 border rounded" required>
                         <input type="password" id="sPassword" placeholder="Temporary Password (for student login)" class="w-full p-3 border rounded" required>
@@ -122,6 +129,7 @@
                     </form>
                 </div>
             </div>
+
         </section>
 
         <section id="student-section" class="hidden mt-8">
@@ -164,7 +172,7 @@
         </section>
         
     </main>
-
+    
     <script>
         // 🚨 STEP 1: REPLACE WITH YOUR ACTUAL FIREBASE CONFIG 🚨
         const firebaseConfig = {
@@ -182,8 +190,6 @@
         const db = firebase.firestore();
         const ADMIN_EMAIL = 'admin@university.edu'; // 🚨 MUST MATCH THE ADMIN USER YOU CREATED IN STEP 1 🚨
 
-        let allStudentsData = []; // Global array to store fetched student data for list/search
-
         // --- COMMON UTILITY FUNCTIONS ---
 
         function showSection(id) {
@@ -197,24 +203,33 @@
                 document.getElementById('logoutBtn').classList.remove('hidden');
             }
         }
+        
+        // New function to switch admin panels
+        function showAdminPanel(panelId) {
+            const dashboardPanel = document.getElementById('dashboard-panel');
+            const addStudentPanel = document.getElementById('add-student-panel');
+            const dashboardTab = document.getElementById('dashboard-tab');
+            const addStudentTab = document.getElementById('add-student-tab');
+            
+            dashboardPanel.classList.add('hidden');
+            addStudentPanel.classList.add('hidden');
+            
+            // Reset tab styles
+            [dashboardTab, addStudentTab].forEach(tab => {
+                tab.classList.remove('border-indigo-600', 'text-indigo-600');
+                tab.classList.add('text-gray-500', 'hover:text-indigo-600');
+            });
 
-        function showAdminTab(tabId) {
-            // Hide all admin tab content
-            document.getElementById('admin-list-tab').classList.add('hidden');
-            document.getElementById('admin-add-tab').classList.add('hidden');
-
-            // Deactivate all tab buttons
-            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-
-            // Show the selected tab content
-            document.getElementById(tabId).classList.remove('hidden');
-
-            // Activate the corresponding tab button
-            if (tabId === 'admin-list-tab') {
-                document.getElementById('tab-list').classList.add('active');
-                fetchAllStudents(); // Fetch and display the list when switching to the list view
-            } else if (tabId === 'admin-add-tab') {
-                document.getElementById('tab-add').classList.add('active');
+            // Set active panel and tab style
+            if (panelId === 'dashboard-panel') {
+                dashboardPanel.classList.remove('hidden');
+                dashboardTab.classList.add('border-indigo-600', 'text-indigo-600');
+                dashboardTab.classList.remove('text-gray-500', 'hover:text-indigo-600');
+                fetchDashboardCounts(); // Load counts when dashboard is shown
+            } else if (panelId === 'add-student-panel') {
+                addStudentPanel.classList.remove('hidden');
+                addStudentTab.classList.add('border-indigo-600', 'text-indigo-600');
+                addStudentTab.classList.remove('text-gray-500', 'hover:text-indigo-600');
             }
         }
 
@@ -225,7 +240,7 @@
             if (user) {
                 if (user.email === ADMIN_EMAIL) {
                     showSection('admin-section');
-                    showAdminTab('admin-list-tab'); // Show the new list view by default
+                    showAdminPanel('dashboard-panel'); // *** THIS IS KEY: Show dashboard first ***
                 } else {
                     fetchStudentData(user.email); 
                 }
@@ -242,7 +257,6 @@
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                // Auth state listener handles the section display
             } catch (error) {
                 errorDiv.textContent = 'Login failed: ' + error.message;
                 errorDiv.classList.remove('hidden');
@@ -254,68 +268,87 @@
             auth.signOut();
         }
 
-        // --- ADMIN PANEL LOGIC ---
-
-        // NEW FUNCTION: Fetch all students for the list view
-        async function fetchAllStudents() {
+        // --- DASHBOARD LOGIC (For counting students) ---
+        
+        async function fetchDashboardCounts() {
             try {
+                // Fetch all documents in the 'students' collection
                 const snapshot = await db.collection("students").get();
-                allStudentsData = snapshot.docs.map(doc => doc.data());
                 
-                // Update Stats
-                document.getElementById('stat-total').textContent = allStudentsData.length;
-                document.getElementById('stat-active').textContent = allStudentsData.length; // Simple for this example
-                document.getElementById('stat-inactive').textContent = 0; // Simple for this example
+                const totalStudents = snapshot.docs.length;
+                let activeEnrollment = 0;
+                let inactiveDropout = 0;
+                
+                snapshot.forEach(doc => {
+                    const studentData = doc.data();
+                    
+                    // Simple check: assuming a 'status' field exists in your student document.
+                    if (studentData.status === 'Inactive' || studentData.status === 'Dropout') {
+                         inactiveDropout++;
+                    } else {
+                        // Assuming default is active if no status or other status
+                        activeEnrollment++;
+                    }
+                });
+                
+                // Update the DOM elements
+                document.getElementById('dashboard-total-students').textContent = totalStudents;
+                document.getElementById('dashboard-active-enrollment').textContent = activeEnrollment;
+                document.getElementById('dashboard-inactive-dropout').textContent = inactiveDropout;
+                document.getElementById('dashboard-pending-actions').textContent = '4'; // Hardcoded as per image
+                
+                // You would also dynamically fill the student table here if needed.
+                if (totalStudents > 0) {
+                    populateStudentListTable(snapshot.docs);
+                } else {
+                     document.getElementById('student-list-body').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-lg text-gray-500">
+                                No students found. Add your first student to the system!
+                            </td>
+                        </tr>
+                    `;
+                }
 
-                // Display the list
-                renderStudentList(allStudentsData);
             } catch (error) {
-                console.error("Error fetching all students:", error);
-                const tableBody = document.getElementById('student-list-body');
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Error loading student data.</td></tr>`;
+                console.error("Error fetching dashboard counts:", error);
+                document.getElementById('dashboard-total-students').textContent = '0';
+                document.getElementById('dashboard-active-enrollment').textContent = '0';
+                document.getElementById('dashboard-inactive-dropout').textContent = '0';
             }
         }
 
-        // NEW FUNCTION: Render the student list table
-        function renderStudentList(students) {
+        function populateStudentListTable(studentDocs) {
             const tableBody = document.getElementById('student-list-body');
-            tableBody.innerHTML = ''; 
+            tableBody.innerHTML = ''; // Clear existing rows
 
-            if (students.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500 font-semibold">No students found. Add your first student to the system!</td></tr>`;
-                return;
-            }
-
-            students.forEach(student => {
-                const row = tableBody.insertRow();
-                const studentStatus = 'Active'; // Simple status for this example
-                row.className = 'hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
-                    <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-700">${student.studentId}</td>
-                    <td class="px-3 py-4 whitespace-nowrap text-sm text-green-600 font-bold">${student.cgpa.toFixed(2)}</td>
-                    <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">${student.email}</td>
-                    <td class="px-3 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${studentStatus}</span></td>
-                    <td class="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="alert('Edit functionality not fully implemented.')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                        <button onclick="alert('Delete functionality not fully implemented.')" class="text-red-600 hover:text-red-900">Delete</button>
-                    </td>
+            studentDocs.forEach(doc => {
+                const data = doc.data();
+                // If you don't have 'grade' and 'status' fields, use placeholders
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${data.name || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.studentId || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.cgpa ? data.cgpa.toFixed(2) : 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.email || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${data.status === 'Inactive' || data.status === 'Dropout' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                ${data.status || 'Active'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                            <a href="#" class="ml-4 text-red-600 hover:text-red-900">Delete</a>
+                        </td>
+                    </tr>
                 `;
+                tableBody.insertAdjacentHTML('beforeend', row);
             });
         }
+        
+        // --- ADMIN PANEL LOGIC (Existing form functions) ---
 
-        // NEW FUNCTION: Filter student list based on search input
-        function filterStudentList() {
-            const query = document.getElementById('student-search').value.toLowerCase();
-            const filteredStudents = allStudentsData.filter(student => 
-                student.name.toLowerCase().includes(query) ||
-                student.studentId.toLowerCase().includes(query) ||
-                student.cgpa.toString().includes(query) 
-            );
-            renderStudentList(filteredStudents);
-        }
-
-        // Function to add a new result row in the admin form (Original logic)
+        // Function to add a new result row in the admin form
         function addResultField() {
             const container = document.getElementById('results-container');
             const html = `
@@ -343,8 +376,8 @@
             
             // 1. Gather Course Results
             const results = [];
-            const entries = document.querySelectorAll('#admin-add-tab .result-entry');
-            let totalCredits = 0; 
+            const entries = document.querySelectorAll('.result-entry');
+            let totalCredits = 0;
 
             entries.forEach(entry => {
                 const inputs = entry.querySelectorAll('input');
@@ -358,6 +391,7 @@
 
             // 2. Add/Update Student Data in Firestore
             try {
+                // You should probably add a 'status: "Active"' field here
                 const docRef = db.collection("students").doc(sEmail);
 
                 await docRef.set({
@@ -368,17 +402,13 @@
                     cgpa: sCGPA,
                     totalCredits: totalCredits,
                     routine: sRoutine,
-                    results: results 
+                    results: results,
+                    status: 'Active' // Added a default status for dashboard counting
                 });
 
                 messageDiv.textContent = `Student ${sName} (${sID}) data saved successfully! REMEMBER to manually create their account in Firebase Auth.`;
                 messageDiv.classList.remove('hidden');
                 
-                // Optional: Clear form after successful submission
-                // document.getElementById('addStudentForm').reset();
-                // document.getElementById('results-container').innerHTML = '';
-                // addResultField(); // Re-add one empty row
-
             } catch (error) {
                 messageDiv.textContent = 'Error saving data: ' + error.message;
                 messageDiv.classList.remove('hidden');
@@ -386,7 +416,7 @@
             }
         });
 
-        // --- STUDENT PANEL LOGIC (Remains the same) ---
+        // --- STUDENT PANEL LOGIC ---
 
         async function fetchStudentData(studentEmail) {
             try {
@@ -397,14 +427,16 @@
                     const data = doc.data();
                     showSection('student-section');
 
+                    // Populate student main info
                     document.getElementById('student-name').textContent = data.name;
                     document.getElementById('s-dept').textContent = data.department;
                     document.getElementById('s-cgpa').textContent = data.cgpa.toFixed(2);
                     document.getElementById('s-credits').textContent = data.totalCredits;
                     document.getElementById('s-routine').textContent = data.routine || 'Routine not yet posted.';
                     
+                    // Populate Results Table
                     const tableBody = document.getElementById('results-table-body');
-                    tableBody.innerHTML = ''; 
+                    tableBody.innerHTML = ''; // Clear previous results
                     
                     data.results.forEach(result => {
                         const row = tableBody.insertRow();
@@ -416,7 +448,7 @@
                     });
 
                 } else {
-                    showSection(null); 
+                    showSection(null); // Force logout/login page if data not found
                     alert("Your student data was not found. Please contact the administrator.");
                     logout();
                 }
